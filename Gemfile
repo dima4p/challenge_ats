@@ -38,6 +38,7 @@ group :development, :test do
   gem 'rspec-activemodel-mocks'
   gem 'rails-controller-testing'
   gem 'shoulda-matchers'
+  gem 'annotate'
 end
 
 group :development do
