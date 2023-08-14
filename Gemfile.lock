@@ -249,6 +249,7 @@ DEPENDENCIES
   guard-rspec
   jbuilder
   jbuilder_rspec_generator
+  multi_json
   puma (~> 5.0)
   rails (~> 7.0.7)
   rails-controller-testing
