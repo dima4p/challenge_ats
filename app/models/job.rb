@@ -15,6 +15,7 @@ class Job < ApplicationRecord
 
   validates :title, :description, presence: true
 
+  has_many :applications
   has_many :events, class_name: '::Event', inverse_of: :object, as: :object
 
   scope :ordered, -> { order(:title) }

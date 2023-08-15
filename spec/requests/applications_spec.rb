@@ -16,9 +16,13 @@ RSpec.describe "/applications", type: :request do
   # This should return the minimal set of attributes required to create a valid
   # Application. As you add validations to Application, be sure to
   # adjust the attributes here as well.
+  let(:job) {create :job}
+  let(:application) {create :application}
+  let(:application2) {create :application}
+
   let(:valid_attributes) {
     attributes_for(:application)
-      .slice(*%i[candidate_name])
+      .slice(*%i[candidate_name]).merge job_id: job.id
   }
 
   let(:invalid_attributes) {
@@ -34,8 +38,15 @@ RSpec.describe "/applications", type: :request do
   }
 
   describe "GET /index" do
+    it 'sends :with_job to Application' do
+      application
+      expect(Application).to receive(:with_job).and_call_original
+      get applications_url, headers: valid_headers, as: :json
+    end
+
     it "renders a successful response" do
-      Application.create! valid_attributes
+      application
+      application2
       get applications_url, headers: valid_headers, as: :json
       expect(response).to be_successful
     end
@@ -43,7 +54,7 @@ RSpec.describe "/applications", type: :request do
 
   describe "GET /show" do
     it "renders a successful response" do
-      application = Application.create! valid_attributes
+      application
       get application_url(application), as: :json
       expect(response).to be_successful
     end
@@ -90,7 +101,7 @@ RSpec.describe "/applications", type: :request do
       }
 
       it "updates the requested application" do
-        application = Application.create! valid_attributes
+        application
         patch application_url(application),
               params: { application: new_attributes }, headers: valid_headers, as: :json
         application.reload
@@ -98,7 +109,7 @@ RSpec.describe "/applications", type: :request do
       end
 
       it "renders a JSON response with the application" do
-        application = Application.create! valid_attributes
+        application
         patch application_url(application),
               params: { application: new_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:ok)
@@ -108,7 +119,7 @@ RSpec.describe "/applications", type: :request do
 
     context "with invalid parameters" do
       it "renders a JSON response with errors for the application" do
-        application = Application.create! valid_attributes
+        application
         patch application_url(application),
               params: { application: invalid_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
@@ -119,7 +130,7 @@ RSpec.describe "/applications", type: :request do
 
   describe "DELETE /destroy" do
     it "destroys the requested application" do
-      application = Application.create! valid_attributes
+      application
       expect {
         delete application_url(application), headers: valid_headers, as: :json
       }.to change(Application, :count).by(-1)

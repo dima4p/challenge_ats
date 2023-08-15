@@ -15,15 +15,19 @@ describe "applications/index.json.jbuilder", type: :view do
     created_at
     updated_at
     url
+    job_title
   ]
 
   it "renders a list of applications as json with following attributes: #{attributes.join(', ')}" do
     hash = MultiJson.load rendered
     expect(hash.first).to eq(hash = hash.last)
     expect(hash.keys.sort).to eq attributes.sort
-    expected = application.attributes.slice *attributes
+    expected = application.attributes.slice *(attributes)
     expected = MultiJson.load MultiJson.dump expected
     expected['url'] = application_url(application, format: 'json')
+    expected['job_title'] = application.job.title
     expect(hash).to eq expected
   end
+
+
 end

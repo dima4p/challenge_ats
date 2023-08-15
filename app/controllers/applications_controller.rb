@@ -4,7 +4,7 @@ class ApplicationsController < ApplicationController
   # GET /applications
   # GET /applications.json
   def index
-    @applications = Application.all
+    @applications = Application.with_job
   end
 
   # GET /applications/1
@@ -48,6 +48,6 @@ class ApplicationsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def application_params
-      params.require(:application).permit(:candidate_name)
+      params.require(:application).permit(:candidate_name, :job_id)
     end
 end

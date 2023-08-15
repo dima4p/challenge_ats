@@ -19,6 +19,7 @@ describe Job, type: :model do
     it {is_expected.to validate_presence_of :title}
     it {is_expected.to validate_presence_of :description}
     it {is_expected.to have_many :events}
+    it {is_expected.to have_many :applications}
   end   # validations
 
   describe 'class methods' do

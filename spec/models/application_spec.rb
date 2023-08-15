@@ -6,6 +6,11 @@
 #  candidate_name :string
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  job_id         :integer          not null
+#
+# Indexes
+#
+#  index_applications_on_job_id  (job_id)
 #
 require 'rails_helper'
 
@@ -17,6 +22,7 @@ describe Application, type: :model do
     it { is_expected.to be_valid }
     it {is_expected.to validate_presence_of :candidate_name}
     it {is_expected.to have_many :events}
+    it {is_expected.to belong_to :job}
   end   # validations
 
   describe 'class methods' do
@@ -26,6 +32,12 @@ describe Application, type: :model do
           expect(Application.ordered).to eq Application.order(:candidate_name)
         end
       end   # .ordered
+
+      describe '.with_job' do
+        it 'includes :job' do
+          expect(Application.with_job).to eq Application.includes :job
+        end
+      end
     end   # scopes
   end   # class methods
 
