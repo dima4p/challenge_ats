@@ -14,6 +14,8 @@ class Application < ApplicationRecord
 
   validates :candidate_name, presence: true
 
+  has_many :events, class_name: '::Event', inverse_of: :object, as: :object
+
   scope :ordered, -> { order(:candidate_name) }
 
 end
