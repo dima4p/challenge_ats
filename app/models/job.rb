@@ -46,4 +46,14 @@ class Job < ApplicationRecord
       SQL
   end
 
+  def status
+    return @status if @status
+    @status = if respond_to?(:event_type)
+          event_type
+        else
+          events.last&.type
+        end
+    @status ||= 'deactivated'
+    @status = @status.split('::').last.downcase
+  end
 end

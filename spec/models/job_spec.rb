@@ -77,4 +77,114 @@ describe Job, type: :model do
     end   # scopes
   end   # class methods
 
+  describe '#status' do
+    subject(:status) {job.status}
+
+    context 'if @status is defined' do
+      before do
+        job.instance_variable_set :@status, 'existing status'
+      end
+
+      it 'returns @status' do
+        is_expected.to eq 'existing status'
+      end
+    end
+
+    context 'if @status is not defined' do
+      let(:respond_to_result) {true}
+      let(:event_type) {}
+
+      before do
+        allow(job).to receive(:respond_to?).and_call_original
+        allow(job).to receive(:respond_to?).with(:event_type, any_args)
+            .and_return respond_to_result
+      end
+
+      it 'checks if attribute #event_type is defined' do
+        allow(job).to receive(:event_type).and_return event_type
+        expect(job).to receive(:respond_to?).with :event_type
+        subject
+      end
+
+      context 'when job.respond_to? :event_type' do
+        before do
+          allow(job).to receive(:event_type).and_return event_type
+        end
+
+        it 'calls #event_type to use later as @status' do
+          expect(job).to receive :event_type
+          subject
+        end
+
+        it 'does not call #events' do
+          expect(job).not_to receive :events
+          subject
+        end
+
+        context 'when #event_type is blank' do
+          it 'assigns "deactivated" to @status' do
+            subject
+            expect(job.instance_variable_get :@status).to eq 'deactivated'
+          end
+
+          it 'returns "deactivated"' do
+            is_expected.to eq 'deactivated'
+          end
+        end
+      end
+
+      context 'when job does not respond_to? :event_type' do
+        let(:respond_to_result) {false}
+
+        let(:events) {job.events}
+        let(:event) {}
+
+        before do
+          allow(job).to receive(:events).and_return events
+          allow(events).to receive(:last).and_return event
+        end
+
+        it 'does not call #event_type to use later as @status' do
+          true
+        end
+
+        it 'calls #events' do
+          expect(job).to receive(:events).and_return events
+          subject
+        end
+
+        describe 'with the #events' do
+          context 'when the assosiation #events is empty' do
+            it 'assigns "deactivated" to @status' do
+              subject
+              expect(job.instance_variable_get :@status).to eq 'deactivated'
+            end
+
+            it 'returns "deactivated"' do
+              is_expected.to eq 'deactivated'
+            end
+          end
+
+          context 'when the assosiation #events is present' do
+            let(:event) {create :event}
+
+            it 'takes the last one' do
+              expect(events).to receive(:last)
+              subject
+            end
+
+            it 'assigns the last part of the event class downcased to @status' do
+              subject
+              expect(job.instance_variable_get :@status)
+                  .to eq event.type.split('::').last.downcase
+            end
+
+            it 'returns the last part of the event class downcased' do
+              is_expected.to eq event.type.split('::').last.downcase
+            end
+          end
+        end
+      end
+    end
+  end   #status
 end
