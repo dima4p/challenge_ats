@@ -48,4 +48,15 @@ class Application < ApplicationRecord
       SQL
     ).select 'applications.*, e.type as event_type'
   end
+
+  def status
+    return @status if @status
+    @status = if respond_to?(:event_type)
+          event_type
+        else
+          events.where.not(type: 'Application::Event::Note').last&.type
+        end
+    @status ||= 'applied'
+    @status = @status.split('::').last.downcase
+  end
 end

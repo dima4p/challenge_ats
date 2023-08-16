@@ -182,4 +182,126 @@ describe Application, type: :model do
     end   # scopes
   end   # class methods
 
+  describe '#status' do
+    subject(:status) {application.status}
+
+    context 'if @status is defined' do
+      before do
+        application.instance_variable_set :@status, 'existing status'
+      end
+
+      it 'returns @status' do
+        is_expected.to eq 'existing status'
+      end
+    end
+
+    context 'if @status is not defined' do
+      let(:respond_to_result) {true}
+      let(:event_type) {}
+
+      before do
+        allow(application).to receive(:respond_to?).and_call_original
+        allow(application).to receive(:respond_to?).with(:event_type, any_args)
+            .and_return respond_to_result
+      end
+
+      it 'checks if attribute #event_type is defined' do
+        allow(application).to receive(:event_type).and_return event_type
+        expect(application).to receive(:respond_to?).with :event_type
+        subject
+      end
+
+      context 'when application.respond_to? :event_type' do
+        before do
+          allow(application).to receive(:event_type).and_return event_type
+        end
+
+        it 'calls #event_type to use later as @status' do
+          expect(application).to receive :event_type
+          subject
+        end
+
+        it 'does not call #events' do
+          expect(application).not_to receive :events
+          subject
+        end
+
+        context 'when #event_type is blank' do
+          it 'assigns "applied" to @status' do
+            subject
+            expect(application.instance_variable_get :@status).to eq 'applied'
+          end
+
+          it 'returns "applied"' do
+            is_expected.to eq 'applied'
+          end
+        end
+      end
+
+      context 'when application does not respond_to? :event_type' do
+        let(:respond_to_result) {false}
+
+        let(:events) {application.events}
+        let(:events_where) {events.where}
+        let(:events_where_not) {events_where.not type: 'type'}
+        let(:event) {}
+
+        before do
+          allow(application).to receive(:events).and_return events
+          allow(events).to receive(:where).and_return events_where
+          allow(events_where).to receive(:not).and_return events_where_not
+          allow(events_where_not).to receive(:last).and_return event
+        end
+
+        it 'does not call #event_type to use later as @status' do
+          true
+        end
+
+        it 'calls #events' do
+          expect(application).to receive(:events).and_return events
+          subject
+        end
+
+        describe 'with the #events' do
+          it 'excluedes all events of type "Application::Event::Note"' do
+            expect(events).to receive(:where).and_return events_where
+            expect(events_where).to receive(:not)
+                .with(type: 'Application::Event::Note')
+                .and_return events_where_not
+            subject
+          end
+
+          context 'when the resuling assosiation is empty' do
+            it 'assigns "applied" to @status' do
+              subject
+              expect(application.instance_variable_get :@status).to eq 'applied'
+            end
+
+            it 'returns "applied"' do
+              is_expected.to eq 'applied'
+            end
+          end
+
+          context 'when the resuling assosiation is present' do
+            let(:event) {create :event}
+
+            it 'takes the last one' do
+              expect(events_where_not).to receive(:last)
+              subject
+            end
+
+            it 'assigns the last part of the event class downcased to @status' do
+              subject
+              expect(application.instance_variable_get :@status)
+                  .to eq event.type.split('::').last.downcase
+            end
+
+            it 'returns the last part of the event class downcased' do
+              is_expected.to eq event.type.split('::').last.downcase
+            end
+          end
+        end
+      end
+    end
+  end   #status
 end
