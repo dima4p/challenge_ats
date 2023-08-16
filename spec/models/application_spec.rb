@@ -22,6 +22,7 @@ describe Application, type: :model do
     it { is_expected.to be_valid }
     it {is_expected.to validate_presence_of :candidate_name}
     it {is_expected.to have_many(:events).order(created_at: :asc)}
+    it {is_expected.to have_many(:notes).order(created_at: :asc)}
     it {is_expected.to belong_to :job}
   end   # validations
 
@@ -206,6 +207,32 @@ describe Application, type: :model do
       end   # .with_last_event
     end   # scopes
   end   # class methods
+
+  describe '#notes' do
+    subject(:notes) {application.notes}
+
+    let!(:note1) {create :event, :application_note, object: application}
+    let!(:note2) {create :event, :application_note, object: application}
+
+    before do
+      create :event, :application_interview, object: application
+      create :event, :application_hired, object: application
+    end
+
+    it 'returns an ActiveRecord::Relation' do
+      is_expected.to be_an ActiveRecord::Relation
+    end
+
+    it 'returns the Relation with Events' do
+      expect(subject.first).to be_an Event
+    end
+
+    it 'returns all events of type Application::Event::Note' do
+      is_expected.to eq [Application::Event::Note.find(note1.id),
+                         Application::Event::Note.find(note2.id)]
+      expect(notes.count).to be 2
+    end
+  end
 
   describe '#status' do
     subject(:status) {application.status}

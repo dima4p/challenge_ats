@@ -20,6 +20,9 @@ class Application < ApplicationRecord
   belongs_to :job
   has_many :events, -> {order created_at: :asc},
       class_name: '::Event', inverse_of: :object, as: :object
+  has_many :notes, -> {where(type: 'Application::Event::Note')
+                       .order created_at: :asc},
+      class_name: '::Event', inverse_of: :object, as: :object
 
   validates :candidate_name, presence: true
 
@@ -34,7 +37,7 @@ class Application < ApplicationRecord
           AND v.object_id = job_id)
           AND e.type = 'Job::Event::Activated'
       SQL
-      )
+    )
   end
   scope :interview, -> do
     with_last_event.where e: {type: 'Application::Event::Interview'}
