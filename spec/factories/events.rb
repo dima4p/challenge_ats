@@ -26,5 +26,13 @@ FactoryBot.define do
     association :object, factory: %w[application job].sample.to_sym
     date { Time.current - rand(1..200).hours }
     sequence(:content) {|n| "Content#{format '%03d', n}" }
+
+    trait :job_activated do
+      type {'Job::Event::Activated'}
+    end
+
+    trait :job_deactivated do
+      type {'Job::Event::Deactivated'}
+    end
   end
 end

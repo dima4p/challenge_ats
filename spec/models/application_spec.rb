@@ -21,7 +21,7 @@ describe Application, type: :model do
   describe 'validations' do
     it { is_expected.to be_valid }
     it {is_expected.to validate_presence_of :candidate_name}
-    it {is_expected.to have_many :events}
+    it {is_expected.to have_many(:events).order(created_at: :asc)}
     it {is_expected.to belong_to :job}
   end   # validations
 
