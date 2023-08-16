@@ -77,6 +77,68 @@ describe Job, type: :model do
     end   # scopes
   end   # class methods
 
+  describe '#applications' do
+    subject(:applications) {job.applications}
+
+    let!(:application1) {create :application, job: job}
+    let!(:application2) {create :application, job: job}
+    let!(:hired) {create :event, :application_hired, object: application2}
+
+    it 'returns the assosiation of Application' do
+      is_expected.to eq [application1, application2]
+      expect(subject.size).to be 2
+    end
+
+    it 'returns the assosiation that does not accept :count' do
+      expect{subject.count}.to raise_error ActiveRecord::StatementInvalid
+    end
+
+    describe 'each application' do
+      it 'has attribute #event_type' do
+        expect(subject.last).to respond_to :event_type
+        expect(subject.last.status).to eq 'hired'
+      end
+    end
+  end   #applications
+
+  describe '#hired_count' do
+    subject(:hired_count) {job.hired_count}
+
+    let!(:application1) {create :application, job: job}
+    let!(:application2) {create :application, job: job}
+    let!(:hired) {create :event, :application_hired, object: application2}
+
+    it 'returns the number of application that were accepted' do
+      is_expected.to be 1
+    end
+  end   #hired_count
+
+  describe '#ongoing_count' do
+    subject(:ongoing_count) {job.ongoing_count}
+
+    let!(:application1) {create :application, job: job}
+    let!(:application2) {create :application, job: job}
+    let!(:application3) {create :application, job: job}
+    let!(:hired) {create :event, :application_hired, object: application2}
+    let!(:rejected) {create :event, :application_rejected, object: application3}
+
+    it 'returns the number of application that were not accepted nor rejected' do
+      is_expected.to be 1
+    end
+  end   #ongoing_count
+
+  describe '#rejected_count' do
+    subject(:rejected_count) {job.rejected_count}
+
+    let!(:application1) {create :application, job: job}
+    let!(:application2) {create :application, job: job}
+    let!(:rejected) {create :event, :application_rejected, object: application2}
+
+    it 'returns the number of application that were rejected' do
+      is_expected.to be 1
+    end
+  end   #rejected_count
+
   describe '#status' do
     subject(:status) {job.status}
 

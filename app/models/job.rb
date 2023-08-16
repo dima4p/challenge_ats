@@ -15,7 +15,7 @@ class Job < ApplicationRecord
 
   validates :title, :description, presence: true
 
-  has_many :applications
+  has_many :applications, -> {with_last_event}
   has_many :events, -> {order created_at: :asc},
       class_name: '::Event', inverse_of: :object, as: :object
 
@@ -44,6 +44,18 @@ class Job < ApplicationRecord
     ).select <<-SQL.strip_heredoc
         jobs.*, e.type as event_type, (e.type = 'Job::Event::Activated') as activated
       SQL
+  end
+
+  def hired_count
+    @hired_count ||= applications.select{|a| a.status == 'hired'}.size
+  end
+
+  def ongoing_count
+    @ongoing_count ||= applications.size - hired_count - rejected_count
+  end
+
+  def rejected_count
+    @rejected_count ||= applications.select{|a| a.status == 'rejected'}.size
   end
 
   def status
