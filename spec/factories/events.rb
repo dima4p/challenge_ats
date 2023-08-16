@@ -16,7 +16,7 @@ FactoryBot.define do
     type do
       %w[
         Application::Event::Hired
-        Application::Event::Inerview
+        Application::Event::Interview
         Application::Event::Note
         Application::Event::Rejected
         Job::Event::Activated
@@ -30,8 +30,8 @@ FactoryBot.define do
       date { Time.current - rand(1..200).hours }
     end
 
-    trait :application_inerview do
-      type {'Application::Event::Inerview'}
+    trait :application_interview do
+      type {'Application::Event::Interview'}
       date { Time.current - rand(1..200).hours }
     end
 

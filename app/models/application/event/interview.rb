@@ -11,6 +11,6 @@
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
-class Application::Event::Inerview < ::Event
+class Application::Event::Interview < ::Event
 
 end

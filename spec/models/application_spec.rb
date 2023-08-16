@@ -27,6 +27,114 @@ describe Application, type: :model do
 
   describe 'class methods' do
     describe 'scopes' do
+      describe '.aplied' do
+        subject(:aplied) {Application.aplied}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_interview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'returns the applications that do not have events besides Note' do
+          is_expected.to eq [application]
+        end
+      end   # .aplied
+
+      describe '.interview' do
+        subject(:interview) {Application.interview}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_interview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application1
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'returns the applications that do not have events besides Note' do
+          is_expected.to eq [application1]
+        end
+      end   # .interview
+
+      describe '.hired' do
+        subject(:hired) {Application.hired}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_interview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application3
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'returns the applications that do not have events besides Note' do
+          is_expected.to eq [application3]
+        end
+      end   # .hired
+
+      describe '.rejected' do
+        subject(:rejected) {Application.rejected}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_interview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application2
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'returns the applications that do not have events besides Note' do
+          is_expected.to eq [application2]
+        end
+      end   # .rejected
+
       describe '.ordered' do
         it 'orders the records of Application by :candidate_name' do
           expect(Application.ordered).to eq Application.order(:candidate_name)
@@ -48,13 +156,13 @@ describe Application, type: :model do
 
         before do
           create :event, :application_hired, object: application3
-          create :event, :application_inerview, object: application1
+          create :event, :application_interview, object: application1
           create :event, :application_rejected, object: application2
           create :event, :application_note, object: application2
         end
 
         it 'returns the Relation with Application' do
-          expect(subject.first).to eq application
+          expect(subject.first).to be_an Application
         end
 
         it 'returns an ActiveRecord::Relation' do
@@ -65,7 +173,7 @@ describe Application, type: :model do
           expect(subject.map{|r| [r.candidate_name, r.event_type]})
               .to eq [
                 [application.candidate_name, nil],
-                [application1.candidate_name, 'Application::Event::Inerview'],
+                [application1.candidate_name, 'Application::Event::Interview'],
                 [application2.candidate_name, 'Application::Event::Rejected'],
                 [application3.candidate_name, 'Application::Event::Hired'],
               ]

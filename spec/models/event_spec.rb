@@ -24,7 +24,7 @@ describe Event, type: :model do
     it do
       is_expected.to validate_inclusion_of(:type).in_array(%w[
         Application::Event::Hired
-        Application::Event::Inerview
+        Application::Event::Interview
         Application::Event::Note
         Application::Event::Rejected
         Job::Event::Activated

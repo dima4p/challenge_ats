@@ -17,12 +17,22 @@
 #
 class Application < ApplicationRecord
 
-  validates :candidate_name, presence: true
-
   belongs_to :job
   has_many :events, -> {order created_at: :asc},
       class_name: '::Event', inverse_of: :object, as: :object
 
+  validates :candidate_name, presence: true
+
+  scope :aplied, -> {with_last_event.where e: {type: nil}}
+  scope :interview, -> do
+    with_last_event.where e: {type: 'Application::Event::Interview'}
+  end
+  scope :hired, -> do
+    with_last_event.where e: {type: 'Application::Event::Hired'}
+  end
+  scope :rejected, -> do
+    with_last_event.where e: {type: 'Application::Event::Rejected'}
+  end
   scope :ordered, -> { order(:candidate_name) }
   scope :with_job, -> {includes :job}
   scope :with_last_event, -> do
@@ -36,8 +46,6 @@ class Application < ApplicationRecord
               AND v.object_id = applications.id
               AND v.type != 'Application::Event::Note')
       SQL
-    ).select <<-SQL.strip_heredoc
-        applications.*, e.type as event_type
-      SQL
+    ).select 'applications.*, e.type as event_type'
   end
 end

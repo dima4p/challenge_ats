@@ -21,7 +21,7 @@ class Event < ApplicationRecord
   validates :type, presence: true
   validates :type, inclusion: {in: %w[
         Application::Event::Hired
-        Application::Event::Inerview
+        Application::Event::Interview
         Application::Event::Note
         Application::Event::Rejected
         Job::Event::Activated
