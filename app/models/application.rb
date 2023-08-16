@@ -20,6 +20,9 @@ class Application < ApplicationRecord
   belongs_to :job
   has_many :events, -> {order created_at: :asc},
       class_name: '::Event', inverse_of: :object, as: :object
+  has_many :interviews, -> {where(type: 'Application::Event::Interview')
+                       .order date: :asc},
+      class_name: '::Event', inverse_of: :object, as: :object
   has_many :notes, -> {where(type: 'Application::Event::Note')
                        .order created_at: :asc},
       class_name: '::Event', inverse_of: :object, as: :object

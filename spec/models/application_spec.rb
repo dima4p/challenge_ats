@@ -208,6 +208,28 @@ describe Application, type: :model do
     end   # scopes
   end   # class methods
 
+  describe '#interviews' do
+    subject(:interviews) {application.interviews}
+
+    let!(:interview1) {create :event, :application_interview, object: application}
+    let!(:interview2) {create :event, :application_interview, object: application}
+
+    it 'returns an ActiveRecord::Relation' do
+      is_expected.to be_an ActiveRecord::Relation
+    end
+
+    it 'returns the Relation with Events' do
+      expect(subject.first).to be_an Event
+    end
+
+    it 'returns all events of type Application::Event::Interview' do
+      is_expected.to eq [Application::Event::Interview.find(interview1.id),
+                         Application::Event::Interview.find(interview2.id)]
+                        .sort_by &:date
+      expect(interviews.count).to be 2
+    end
+  end
+
   describe '#notes' do
     subject(:notes) {application.notes}
 
