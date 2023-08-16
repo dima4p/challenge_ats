@@ -54,6 +54,31 @@ describe Application, type: :model do
         end
       end   # .aplied
 
+      describe '.for_active_jobs' do
+        subject(:for_active_jobs) {Application.for_active_jobs}
+
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+
+        before do
+          create :event, :job_activated, object: application.job
+          create :event, :job_deactivated, object: application2.job
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns the applications those #job is activated' do
+          is_expected.to eq [application]
+        end
+      end   # .for_active_jobs
+
       describe '.interview' do
         subject(:interview) {Application.interview}
         let!(:application) {create :application}

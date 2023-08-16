@@ -24,6 +24,18 @@ class Application < ApplicationRecord
   validates :candidate_name, presence: true
 
   scope :aplied, -> {with_last_event.where e: {type: nil}}
+  scope :for_active_jobs, -> do
+    joins(<<-SQL.strip_heredoc
+        INNER JOIN events e
+        ON e.object_type = 'Job'
+          AND e.object_id = job_id
+          AND e.id = (SELECT max(id) from events v
+        WHERE v.object_type = 'Job'
+          AND v.object_id = job_id)
+          AND e.type = 'Job::Event::Activated'
+      SQL
+      )
+  end
   scope :interview, -> do
     with_last_event.where e: {type: 'Application::Event::Interview'}
   end
