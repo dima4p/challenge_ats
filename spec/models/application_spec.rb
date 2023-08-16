@@ -38,6 +38,39 @@ describe Application, type: :model do
           expect(Application.with_job).to eq Application.includes :job
         end
       end
+
+      describe '.with_last_event' do
+        subject(:with_last_event) {Application.with_last_event}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_inerview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application2
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to eq application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
+        it 'adds attribute #event_type to Application' do
+          expect(subject.map{|r| [r.candidate_name, r.event_type]})
+              .to eq [
+                [application.candidate_name, nil],
+                [application1.candidate_name, 'Application::Event::Inerview'],
+                [application2.candidate_name, 'Application::Event::Rejected'],
+                [application3.candidate_name, 'Application::Event::Hired'],
+              ]
+        end
+      end   # .with_last_event
     end   # scopes
   end   # class methods
 

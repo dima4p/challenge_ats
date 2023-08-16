@@ -25,5 +25,19 @@ class Application < ApplicationRecord
 
   scope :ordered, -> { order(:candidate_name) }
   scope :with_job, -> {includes :job}
-
+  scope :with_last_event, -> do
+    joins(<<-SQL.strip_heredoc
+      LEFT OUTER JOIN events e
+      ON e.object_type = 'Application'
+        AND e.object_id = applications.id
+        AND e.id =
+          (SELECT max(id) from events v
+            WHERE v.object_type = 'Application'
+              AND v.object_id = applications.id
+              AND v.type != 'Application::Event::Note')
+      SQL
+    ).select <<-SQL.strip_heredoc
+        applications.*, e.type as event_type
+      SQL
+  end
 end

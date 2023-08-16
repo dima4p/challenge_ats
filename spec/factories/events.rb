@@ -24,8 +24,25 @@ FactoryBot.define do
       ].sample
     end
     association :object, factory: %w[application job].sample.to_sym
-    date { Time.current - rand(1..200).hours }
-    sequence(:content) {|n| "Content#{format '%03d', n}" }
+
+    trait :application_hired do
+      type {'Application::Event::Hired'}
+      date { Time.current - rand(1..200).hours }
+    end
+
+    trait :application_inerview do
+      type {'Application::Event::Inerview'}
+      date { Time.current - rand(1..200).hours }
+    end
+
+    trait :application_note do
+      type {'Application::Event::Note'}
+      sequence(:content) {|n| "Content#{format '%03d', n}" }
+    end
+
+    trait :application_rejected do
+      type {'Application::Event::Rejected'}
+    end
 
     trait :job_activated do
       type {'Job::Event::Activated'}
