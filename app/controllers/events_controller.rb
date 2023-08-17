@@ -48,6 +48,16 @@ class EventsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def event_params
-      params.require(:event).permit(:type, :object_type, :object_id, :date, :content)
+      type = params['event']['type'] || @event.type
+      list = %i[
+        type
+        object_type
+        object_id
+      ]
+      list << :date if %w[Application::Event::Interview
+                          Application::Event::Hired].include? type
+      list << :content if type == 'Application::Event::Note'
+
+      params.require(:event).permit list
     end
 end

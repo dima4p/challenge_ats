@@ -106,6 +106,8 @@ RSpec.describe "/events", type: :request do
   end
 
   describe "PATCH /update" do
+    let(:event) {create :event, :application_note}
+
     context "with valid parameters" do
       let(:new_attributes) {
         {content: 'New content'}
