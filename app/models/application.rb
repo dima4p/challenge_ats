@@ -29,43 +29,43 @@ class Application < ApplicationRecord
 
   validates :candidate_name, presence: true
 
-  scope :aplied, -> {with_last_event.where e: {type: nil}}
+  scope :aplied, -> {with_last_event.where e2: {type: nil}}
   scope :for_active_jobs, -> do
     joins(<<-SQL.strip_heredoc
-        INNER JOIN events e
-        ON e.object_type = 'Job'
-          AND e.object_id = job_id
-          AND e.id = (SELECT max(id) from events v
-        WHERE v.object_type = 'Job'
-          AND v.object_id = job_id)
-          AND e.type = 'Job::Event::Activated'
+        INNER JOIN events e1
+        ON e1.object_type = 'Job'
+          AND e1.object_id = job_id
+          AND e1.id = (SELECT max(id) from events v1
+        WHERE v1.object_type = 'Job'
+          AND v1.object_id = job_id)
+          AND e1.type = 'Job::Event::Activated'
       SQL
     )
   end
   scope :interview, -> do
-    with_last_event.where e: {type: 'Application::Event::Interview'}
+    with_last_event.where e2: {type: 'Application::Event::Interview'}
   end
   scope :hired, -> do
-    with_last_event.where e: {type: 'Application::Event::Hired'}
+    with_last_event.where e2: {type: 'Application::Event::Hired'}
   end
   scope :rejected, -> do
-    with_last_event.where e: {type: 'Application::Event::Rejected'}
+    with_last_event.where e2: {type: 'Application::Event::Rejected'}
   end
   scope :ordered, -> { order(:candidate_name) }
   scope :with_interviews, -> {includes :interviews}
   scope :with_job, -> {includes :job}
   scope :with_last_event, -> do
     joins(<<-SQL.strip_heredoc
-      LEFT OUTER JOIN events e
-      ON e.object_type = 'Application'
-        AND e.object_id = applications.id
-        AND e.id =
-          (SELECT max(id) from events v
-            WHERE v.object_type = 'Application'
-              AND v.object_id = applications.id
-              AND v.type != 'Application::Event::Note')
+      LEFT OUTER JOIN events e2
+      ON e2.object_type = 'Application'
+        AND e2.object_id = applications.id
+        AND e2.id =
+          (SELECT max(id) from events v2
+            WHERE v2.object_type = 'Application'
+              AND v2.object_id = applications.id
+              AND v2.type != 'Application::Event::Note')
       SQL
-    ).select 'applications.*, e.type as event_type'
+    ).select 'applications.*, e2.type as event_type'
   end
   scope :with_notes, -> {includes :notes}
 
