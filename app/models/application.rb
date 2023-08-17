@@ -66,6 +66,7 @@ class Application < ApplicationRecord
       SQL
     ).select 'applications.*, e.type as event_type'
   end
+  scope :with_notes, -> {includes :notes}
 
   def status
     return @status if @status

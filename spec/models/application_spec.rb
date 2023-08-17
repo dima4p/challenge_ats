@@ -205,6 +205,12 @@ describe Application, type: :model do
               ]
         end
       end   # .with_last_event
+
+      describe '.with_notes' do
+        it 'includes :job' do
+          expect(Application.with_notes).to eq Application.includes :notes
+        end
+      end
     end   # scopes
   end   # class methods
 
