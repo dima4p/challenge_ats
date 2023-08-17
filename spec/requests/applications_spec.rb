@@ -46,11 +46,13 @@ RSpec.describe "/applications", type: :request do
     let(:params) {{}}
     let(:with_last_event) {Application.with_last_event}
     let(:with_job) {with_last_event.with_job}
+    let(:with_notes) {with_job.with_notes}
 
     before do
       allow(Application).to receive(:for_active_jobs).and_return Application
       allow(Application).to receive(:with_last_event).and_return with_last_event
       allow(with_last_event).to receive(:with_job).and_return with_job
+      allow(with_job).to receive(:with_notes).and_return with_notes
     end
 
     context 'when there is no paramter' do
@@ -84,6 +86,12 @@ RSpec.describe "/applications", type: :request do
     it 'sends :with_notes to Application.with_last_event.with_job' do
       application
       expect(with_job).to receive(:with_notes).and_call_original
+      get_index
+    end
+
+    it 'sends :with_interviews to Application.with_last_event.with_job.with_notes' do
+      application
+      expect(with_notes).to receive(:with_interviews).and_call_original
       get_index
     end
 
