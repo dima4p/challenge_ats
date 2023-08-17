@@ -38,16 +38,59 @@ RSpec.describe "/applications", type: :request do
   }
 
   describe "GET /index" do
-    it 'sends :with_job to Application' do
+    subject(:get_index) do
+      get applications_url(params: params),
+          headers: valid_headers,
+          as: :json
+    end
+    let(:params) {{}}
+    let(:with_last_event) {Application.with_last_event}
+    let(:with_job) {with_last_event.with_job}
+
+    before do
+      allow(Application).to receive(:for_active_jobs).and_return Application
+      allow(Application).to receive(:with_last_event).and_return with_last_event
+      allow(with_last_event).to receive(:with_job).and_return with_job
+    end
+
+    context 'when there is no paramter' do
+      it 'sends :for_active_jobs to Application' do
+        expect(Application).to receive(:for_active_jobs).and_call_original
+        get_index
+      end
+    end
+
+    context 'when there is paramter :all' do
+      let(:params) {{all: 1}}
+
+      it 'does not send :for_active_jobs to Application' do
+        expect(Application).not_to receive(:for_active_jobs)
+        get_index
+      end
+    end
+
+    it 'sends :with_last_event to Application' do
       application
-      expect(Application).to receive(:with_job).and_call_original
-      get applications_url, headers: valid_headers, as: :json
+      expect(Application).to receive(:with_last_event).and_return with_last_event
+      get_index
+    end
+
+    it 'sends :with_job to Application.with_last_event' do
+      application
+      expect(with_last_event).to receive(:with_job).and_call_original
+      get_index
+    end
+
+    it 'sends :with_notes to Application.with_last_event.with_job' do
+      application
+      expect(with_job).to receive(:with_notes).and_call_original
+      get_index
     end
 
     it "renders a successful response" do
       application
       application2
-      get applications_url, headers: valid_headers, as: :json
+      get_index
       expect(response).to be_successful
     end
   end
@@ -61,33 +104,36 @@ RSpec.describe "/applications", type: :request do
   end
 
   describe "POST /create" do
+    subject(:post_create) do
+      post applications_url,
+          params: { application: attributes },
+          headers: valid_headers,
+          as: :json
+    end
+
     context "with valid parameters" do
+      let(:attributes) {valid_attributes}
+
       it "creates a new Application" do
-        expect {
-          post applications_url,
-               params: { application: valid_attributes }, headers: valid_headers, as: :json
-        }.to change(Application, :count).by(1)
+        expect {post_create}.to change(Application, :count).by(1)
       end
 
       it "renders a JSON response with the new application" do
-        post applications_url,
-             params: { application: valid_attributes }, headers: valid_headers, as: :json
+        post_create
         expect(response).to have_http_status(:created)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
 
     context "with invalid parameters" do
+      let(:attributes) {invalid_attributes}
+
       it "does not create a new Application" do
-        expect {
-          post applications_url,
-               params: { application: invalid_attributes }, as: :json
-        }.to change(Application, :count).by(0)
+        expect {post_create}.to change(Application, :count).by(0)
       end
 
       it "renders a JSON response with errors for the new application" do
-        post applications_url,
-             params: { application: invalid_attributes }, headers: valid_headers, as: :json
+        post_create
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -95,33 +141,35 @@ RSpec.describe "/applications", type: :request do
   end
 
   describe "PATCH /update" do
+    subject(:patch_update) do
+      patch application_url(application),
+            params: { application: attributes }, headers: valid_headers, as: :json
+    end
+
     context "with valid parameters" do
-      let(:new_attributes) {
-        {candidate_name: 'New name'}
-      }
+      let(:attributes) {{candidate_name: 'New name'}}
 
       it "updates the requested application" do
         application
-        patch application_url(application),
-              params: { application: new_attributes }, headers: valid_headers, as: :json
+        patch_update
         application.reload
         expect(application.candidate_name).to eq 'New name'
       end
 
       it "renders a JSON response with the application" do
         application
-        patch application_url(application),
-              params: { application: new_attributes }, headers: valid_headers, as: :json
+        patch_update
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
 
     context "with invalid parameters" do
+      let(:attributes) {invalid_attributes}
+
       it "renders a JSON response with errors for the application" do
         application
-        patch application_url(application),
-              params: { application: invalid_attributes }, headers: valid_headers, as: :json
+        patch_update
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to match(a_string_including("application/json"))
       end

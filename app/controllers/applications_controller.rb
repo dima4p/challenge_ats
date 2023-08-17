@@ -4,7 +4,9 @@ class ApplicationsController < ApplicationController
   # GET /applications
   # GET /applications.json
   def index
-    @applications = Application.with_job
+    @applications = Application
+    @applications = @applications.for_active_jobs unless params[:all]
+    @applications = @applications.with_last_event.with_job.with_notes
   end
 
   # GET /applications/1
