@@ -52,6 +52,7 @@ class Application < ApplicationRecord
     with_last_event.where e: {type: 'Application::Event::Rejected'}
   end
   scope :ordered, -> { order(:candidate_name) }
+  scope :with_interviews, -> {includes :interviews}
   scope :with_job, -> {includes :job}
   scope :with_last_event, -> do
     joins(<<-SQL.strip_heredoc

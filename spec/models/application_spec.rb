@@ -167,6 +167,12 @@ describe Application, type: :model do
         end
       end   # .ordered
 
+      describe '.with_interviews' do
+        it 'includes :interviews' do
+          expect(Application.with_interviews).to eq Application.includes :interviews
+        end
+      end
+
       describe '.with_job' do
         it 'includes :job' do
           expect(Application.with_job).to eq Application.includes :job
