@@ -47,6 +47,19 @@ describe Job, type: :model do
         end
       end   # .ordered
 
+      describe 'with_applications' do
+        subject(:with_applications) {Job.with_applications}
+
+        let!(:application1) {create :application, job: job}
+        let!(:application2) {create :application, job: job}
+        let!(:hired) {create :event, :application_hired, object: application2}
+
+        it 'includes :applications' do
+          expect(subject.first.applications.last.event_type)
+              .to eq 'Application::Event::Hired'
+        end
+      end   # .with_applications
+
       describe '.with_last_event' do
         subject(:with_last_event) {Job.with_last_event}
         let!(:job) {create :job}
@@ -246,7 +259,7 @@ describe Job, type: :model do
             end
           end
         end
-      end
-    end
+      end   # when job does not respond_to? :event_type
+    end   # if @status is not defined
   end   #status
 end

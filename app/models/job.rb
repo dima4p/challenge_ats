@@ -32,6 +32,7 @@ class Job < ApplicationRecord
       SQL
       )
   end
+  scope :with_applications, -> {includes :applications}
   scope :with_last_event, -> do
     joins(<<-SQL.strip_heredoc
       LEFT OUTER JOIN events e
