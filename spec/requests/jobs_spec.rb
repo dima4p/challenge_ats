@@ -34,15 +34,22 @@ RSpec.describe "/jobs", type: :request do
   }
 
   describe "GET /index" do
+    subject(:get_index) {get jobs_url, headers: valid_headers, as: :json}
+
+    it 'sends :with_applications to Job' do
+      expect(Job).to receive(:with_applications).and_call_original
+      get_index
+    end
+
     it "renders a successful response" do
       Job.create! valid_attributes
-      get jobs_url, headers: valid_headers, as: :json
+      get_index
       expect(response).to be_successful
     end
 
     it "renders the 'index' template" do
       job = Job.create! valid_attributes
-      get jobs_url, headers: valid_headers, as: :json
+      get_index
       expect(response).to render_template("index")
     end
   end
