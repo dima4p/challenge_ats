@@ -6,7 +6,7 @@ class ApplicationsController < ApplicationController
   def index
     @applications = Application
     @applications = @applications.for_active_jobs unless params[:all]
-    @applications = @applications.with_last_event
+    @applications = @applications.with_last_event_type
         .with_job
         .with_notes
         .with_interviews

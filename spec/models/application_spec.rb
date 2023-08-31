@@ -201,6 +201,33 @@ describe Application, type: :model do
           is_expected.to be_an ActiveRecord::Relation
         end
 
+        it 'does not add attribute #event_type to Application' do
+          expect(subject.last).not_to respond_to :event_type
+        end
+      end   # .with_last_event
+
+      describe '.with_last_event_type' do
+        subject(:with_last_event_type) {Application.with_last_event_type}
+        let!(:application) {create :application}
+        let!(:application1) {create :application}
+        let!(:application2) {create :application}
+        let!(:application3) {create :application}
+
+        before do
+          create :event, :application_hired, object: application3
+          create :event, :application_interview, object: application1
+          create :event, :application_rejected, object: application2
+          create :event, :application_note, object: application2
+        end
+
+        it 'returns the Relation with Application' do
+          expect(subject.first).to be_an Application
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
         it 'adds attribute #event_type to Application' do
           expect(subject.map{|r| [r.candidate_name, r.event_type]})
               .to eq [
@@ -210,7 +237,7 @@ describe Application, type: :model do
                 [application3.candidate_name, 'Application::Event::Hired'],
               ]
         end
-      end   # .with_last_event
+      end   # .with_last_event_type
 
       describe '.with_notes' do
         it 'includes :job' do

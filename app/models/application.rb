@@ -29,7 +29,10 @@ class Application < ApplicationRecord
 
   validates :candidate_name, presence: true
 
-  scope :aplied, -> {with_last_event.where e2: {type: nil}}
+  scope :aplied, -> do
+    select('applications.*')
+        .from(with_last_event.where(e2: {type: nil}), :applications)
+  end
   scope :for_active_jobs, -> do
     joins(<<-SQL.strip_heredoc
         INNER JOIN events e1
@@ -43,13 +46,19 @@ class Application < ApplicationRecord
     )
   end
   scope :interview, -> do
-    with_last_event.where e2: {type: 'Application::Event::Interview'}
+    select('applications.*')
+        .from(with_last_event.where(e2: {type: 'Application::Event::Interview'}),
+              :applications)
   end
   scope :hired, -> do
-    with_last_event.where e2: {type: 'Application::Event::Hired'}
+    select('applications.*')
+        .from(with_last_event.where(e2: {type: 'Application::Event::Hired'}),
+              :applications)
   end
   scope :rejected, -> do
-    with_last_event.where e2: {type: 'Application::Event::Rejected'}
+    select('applications.*')
+        .from(with_last_event.where(e2: {type: 'Application::Event::Rejected'}),
+              :applications)
   end
   scope :ordered, -> { order(:candidate_name) }
   scope :with_interviews, -> {includes :interviews}
@@ -65,9 +74,20 @@ class Application < ApplicationRecord
               AND v2.object_id = applications.id
               AND v2.type != 'Application::Event::Note')
       SQL
-    ).select 'applications.*, e2.type as event_type'
+    )
+  end
+  scope :with_last_event_type, -> do
+    with_last_event.select 'applications.*, e2.type as event_type'
   end
   scope :with_notes, -> {includes :notes}
+
+  class << self
+    def count(column_name = nil)
+      column_name ||= :all
+      super column_name
+    end
+  end
+
 
   def status
     return @status if @status
