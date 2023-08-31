@@ -17,7 +17,7 @@ class Job < ApplicationRecord
 
   has_many :applications
   has_many :applications_with_state, -> {with_last_event_type}, class_name: 'Application'
-  has_many :events, -> {order created_at: :asc},
+  has_many :events, -> {order id: :asc},
       class_name: '::Event', inverse_of: :object, as: :object
 
   scope :ordered, -> { order(:title) }
