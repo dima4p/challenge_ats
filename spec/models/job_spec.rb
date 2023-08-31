@@ -55,7 +55,7 @@ describe Job, type: :model do
         let!(:hired) {create :event, :application_hired, object: application2}
 
         it 'includes :applications' do
-          expect(subject.first.applications.last.event_type)
+          expect(subject.first.applications_with_state.last.event_type)
               .to eq 'Application::Event::Hired'
         end
       end   # .with_applications
@@ -80,13 +80,42 @@ describe Job, type: :model do
           is_expected.to be_an ActiveRecord::Relation
         end
 
+        it 'doeds not add sattribute #event_type to Job' do
+          expect(subject.last).not_to respond_to :event_type
+        end
+
+        it 'doeds not add sattribute #activated to Job' do
+          expect(subject.last).not_to respond_to :activated
+        end
+      end   # .with_last_event
+
+      describe '.with_last_event_type' do
+        subject(:with_last_event_type) {Job.with_last_event_type}
+        let!(:job) {create :job}
+        let!(:job1) {create :job}
+        let!(:job2) {create :job}
+
+        before do
+          create :event, :job_activated, object: job
+          create :event, :job_activated, object: job1
+          create :event, :job_deactivated, object: job1
+        end
+
+        it 'returns the Relation with Job' do
+          expect(subject.first).to eq job
+        end
+
+        it 'returns an ActiveRecord::Relation' do
+          is_expected.to be_an ActiveRecord::Relation
+        end
+
         it 'adds attributes #event_type and #activated to Job' do
           expect(subject.map{|r| [r.title, r.event_type, r.activated.to_bool]})
               .to eq [[job.title, 'Job::Event::Activated', true],
                       [job1.title, 'Job::Event::Deactivated', false],
                       [job2.title, nil, false]]
         end
-      end   # .with_last_event
+      end   # .with_last_event_type
     end   # scopes
   end   # class methods
 
@@ -102,17 +131,36 @@ describe Job, type: :model do
       expect(subject.size).to be 2
     end
 
-    it 'returns the assosiation that does not accept :count' do
-      expect{subject.count}.to raise_error ActiveRecord::StatementInvalid
-    end
-
-    describe 'each application' do
-      it 'has attribute #event_type' do
-        expect(subject.last).to respond_to :event_type
-        expect(subject.last.status).to eq 'hired'
-      end
+    it 'returns the assosiation that accepts :count' do
+      expect(subject.count).to eq 2
     end
   end   #applications
+
+  describe '#applications_with_state' do
+    subject(:applications_with_state) {job.applications_with_state}
+
+    let!(:application1) {create :application, job: job}
+    let!(:application2) {create :application, job: job}
+    let!(:hired) {create :event, :application_hired, object: application2}
+
+    it 'returns the assosiation of Application' do
+      is_expected.to eq [application1, application2]
+      expect(subject.size).to be 2
+    end
+
+    it 'returns the assosiation that accepts :count' do
+      expect(subject.count(:all)).to eq 2
+    end
+
+    describe 'each member of the assosiation' do
+      subject(:item) {applications_with_state.last}
+
+      it 'has attribute #event_type' do
+        is_expected.to respond_to :event_type
+        expect(item.event_type).to eq 'Application::Event::Hired'
+      end
+    end
+  end   #applications_with_state
 
   describe '#hired_count' do
     subject(:hired_count) {job.hired_count}
