@@ -62,3 +62,22 @@ all applications from deactivated jobs. Properties:
 - Number of rejected candidates
 - Number of ongoing applications (where status is not hired or
 rejected)
+
+# My comments
+
+1. The requirement to keep all events in one table is funny. I see much more sense to to separate them into 2 tables, one for Jobs and one for Applications.
+
+1. Since I unless it is explicitly required always use `sqlite3` the use of `json` field for the optional values of `Event`s is not possible. While storing JSON as text makes no sense since it decreases the performance.
+
+1. Use of ElasticSearch for this application is senseless since:
+- it does not speed up the response significantly if at all
+- it requires more disk memory
+- the transfer of the changes in the database to the ElasticSearch replica requires some time therefore there is some period of time after an `Event` occurs till the depending model state change becomes visible. In my previous project with ElasticSearch it took 12 hour in average.
+
+1. The creating `#state` for the subclasses of `Event` is not needed since in most cases we should calculate the state of the depending model without instantiation of the those models.
+
+1. Due to the lack of time the scopes for `Application` and `Job` were implemented not completely correctly at beginning. Now they are fixed. Yes, some of them still raise an error when they receive `:count`. But sending `:count` with `:all` works as expected. This amend also fixed the problem with the doubled joins.
+
+1. The invalidation of `@status` of `Application` and `Job` is not needed since no one instance live long enough for a status change can have an effect. The implementation of the invalidation of `@status` will nave no other effect than slowing down the application.
+
+1. Due to the lack of time the creation of some indices was skipped. They include the index on `#object_id` for `Event`. The creation of index on `#object_type` is not needed and it is **wrong** to create it.
